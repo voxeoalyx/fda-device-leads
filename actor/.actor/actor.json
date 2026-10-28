@@ -1,0 +1,2 @@
+{"actorSpecification":1,"name":"openfda-device-leads-feed","title":"openFDA Device Leads Feed","version":"0.1","buildTag":"latest",
+ "input":"./input_schema.json","dockerfile":"../Dockerfile"}

@@ -1,0 +1,10 @@
+{"title":"openFDA Device Leads Feed input","type":"object","schemaVersion":1,"properties":{
+ "dateFrom":{"title":"Date from","type":"string","editor":"textfield","description":"YYYY-MM-DD (510k decision date / listing created / recall posted)","default":"2026-09-01"},
+ "dateTo":{"title":"Date to","type":"string","editor":"textfield","description":"YYYY-MM-DD","default":"2026-10-27"},
+ "sources":{"title":"Sources","type":"array","editor":"stringList","description":"Any of: 510k, registrationlisting, recall","default":["510k","registrationlisting","recall"]},
+ "productCodes":{"title":"FDA product codes","type":"array","editor":"stringList","description":"e.g. QJP, DXN. Empty = all"},
+ "keywords":{"title":"Device keywords","type":"array","editor":"stringList","description":"Matched against device name / description"},
+ "state":{"title":"US state","type":"string","editor":"textfield","description":"2-letter code, e.g. CA"},
+ "maxResults":{"title":"Max results","type":"integer","default":100,"minimum":1,"maximum":5000,"description":"Free Apify plan users are capped at 50 results per run."},
+ "fdaApiKey":{"title":"openFDA API key (optional)","type":"string","editor":"textfield","isSecret":true,"description":"Only raises rate limits"}},
+ "required":["dateFrom","dateTo"]}
