@@ -17,6 +17,6 @@ o = [f"# FDA device activity, week ending {end}", "", f"_{header}_", "",
      f"Non-US firms (no state): {foreign}", "", "## Top FDA product codes", ""] + [f"- `{k}`: {v}" for k, v in pc] + ["", "## Top US states", ""] + [f"- {k}: {v}" for k, v in st] + [
      "", "## Recent 510(k) clearances (first 10)", "", "| Company | Device | Product code | Decision date |", "|---|---|---|---|"] + [
      f"| {r['company']} | {r['device'][:70]} | {r['productCode']} | [{r['date']}]({r['sourceUrl']}) |" for r in [x for x in rows if x['leadType']=='510k_clearance'][:10]] + [
-     "", "---", "Full file (all rows with address, filed contact/phone, recalls with reasons, FDA links): **[KOFI_LINK_PLACEHOLDER]** ($12/mo, cancel anytime). Or run the free MIT script in this repo yourself.",
+     "", "---", "Full file (all rows with address, filed contact/phone, recalls with reasons, FDA links): **https://ko-fi.com/fdadeviceleads** ($12/mo, cancel anytime). Or run the free MIT script in this repo yourself.",
      "", "Source: openFDA, public domain (CC0). Not affiliated with or endorsed by the U.S. FDA. AI-assisted pipeline. Data unvalidated: verify before use."]
 os.makedirs(outdir, exist_ok=True); p = os.path.join(outdir, f"{end}.md"); open(p, "w").write("\n".join(o) + "\n"); print(p)

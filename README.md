@@ -2,7 +2,7 @@
 
 Turn three public FDA device databases (510(k) clearances, establishment registrations & listings, device recalls) into one weekly lead CSV of medical-device companies with fresh FDA activity.
 
-- **Get the weekly CSV without running anything:** Ko-fi membership, $12/mo, cancel anytime → **[KOFI_LINK_PLACEHOLDER]**
+- **Get the weekly CSV without running anything:** Ko-fi membership, $12/mo, cancel anytime → **https://ko-fi.com/fdadeviceleads**
 - **Free sample:** [`sample/sample-fda-device-leads.csv`](sample/sample-fda-device-leads.csv)
 - **Run it yourself (free, MIT):** `python3 scripts/generate_weekly.py --end 2026-10-26` (stdlib only, no key needed)
 - `actor/` is the same pipeline packaged as an Apify actor (Python SDK).
