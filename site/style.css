@@ -13,3 +13,14 @@ th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #e6ebf2}th{backg
 .price{font-size:2.2rem;font-weight:700;color:#0f2747}.price small{font-size:1rem;color:#5a6b80}
 ol li,ul li{margin:6px 0}footer{padding:32px 0;color:#5a6b80;font-size:.85rem;border-top:1px solid #dde4ee}
 @media(max-width:720px){.stats,.cols{grid-template-columns:1fr 1fr}h1{font-size:2rem}}
+.prose h1{font-size:1.7rem;line-height:1.25;color:#0f2747}
+.prose h2{margin:28px 0 12px}
+.prose a{color:#1c4a96}
+.prose code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#e9eff7;padding:1px 6px;border-radius:4px;font-size:.9em}
+.prose hr{border:0;border-top:1px solid #dde4ee;margin:28px 0}
+.prose table{margin:8px 0 20px}
+.archive{list-style:none;padding:0;margin:0}
+.archive li{margin:0 0 12px}
+.archive a{display:block;background:#fff;border-radius:10px;padding:16px 20px;text-decoration:none;color:#0f2747;font-weight:600;box-shadow:0 1px 3px #0001}
+.archive a span{display:block;margin-top:4px;font-weight:400;color:#5a6b80;font-size:.9rem}
+.archive a:hover{color:#1c4a96}

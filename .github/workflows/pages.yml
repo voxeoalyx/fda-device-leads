@@ -2,7 +2,8 @@
 name: Deploy static content to Pages
 
 on:
-  # Runs on pushes targeting the default branch
+  # Runs on pushes targeting the default branch. A new weekly/*.md file is
+  # rendered to HTML in the build step, so it publishes with this workflow.
   push:
     branches: ["main"]
 
@@ -32,7 +33,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build weekly pages, sitemap, and robots.txt
+        env:
+          PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          python -m pip install --disable-pip-version-check "Markdown==3.10"
+          python .github/build_pages.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

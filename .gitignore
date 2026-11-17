@@ -4,3 +4,8 @@ storage/
 out/
 .env
 *.key
+
+# Written by .github/build_pages.py during the Pages deploy
+site/weekly/
+site/sitemap.xml
+site/robots.txt
