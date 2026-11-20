@@ -9,6 +9,11 @@ Reads weekly/YYYY-MM-DD.md and writes:
   site/sitemap.xml
   site/robots.txt
 
+Each weekly page gets a footer nav: previous week, next week (each omitted
+when that neighbor does not exist), and the weekly archive. The four newest
+weeks are inserted into site/index.html at the <!-- latest-weekly --> marker.
+Archive entries use the weekly page title as the link text.
+
 A push of a new weekly Markdown file republishes that page on the next
 Pages deploy. No generated HTML is committed.
 
@@ -74,12 +79,6 @@ class Week:
     @property
     def path(self) -> str:
         return f"/weekly/{self.html_name}"
-
-    @property
-    def link_label(self) -> str:
-        if self.label.startswith("week of "):
-            return "Week of " + self.label.removeprefix("week of ")
-        return self.label
 
 
 def base_url() -> str:
@@ -188,9 +187,35 @@ def page(
 """
 
 
-def week_page(origin: str, week: Week) -> str:
+def week_nav(older: Week | None, newer: Week | None) -> str:
+    links: list[str] = []
+    if older is not None:
+        links.append(f'<a href="{esc(older.html_name)}">Previous week</a>')
+    if newer is not None:
+        links.append(f'<a href="{esc(newer.html_name)}">Next week</a>')
+    links.append('<a href="./">Weekly archive</a>')
+    return (
+        '<nav class="week-nav" aria-label="Weekly summaries">\n'
+        + "\n".join(links)
+        + "\n</nav>"
+    )
+
+
+def week_page(
+    origin: str,
+    week: Week,
+    *,
+    older: Week | None,
+    newer: Week | None,
+) -> str:
     canonical = absolute(origin, week.path)
-    body = f'<section><div class="wrap prose">\n{week.article}\n</div></section>'
+    nav = week_nav(older, newer)
+    body = (
+        '<section><div class="wrap">\n'
+        f'<div class="prose">\n{week.article}\n</div>\n'
+        f"{nav}\n"
+        "</div></section>"
+    )
     return page(
         title=week.title,
         description=week.title,
@@ -213,7 +238,7 @@ def index_page(origin: str, weeks: list[Week]) -> str:
     for week in weeks:
         detail = f"{week.total} rows" if week.total is not None else "Weekly summary"
         items.append(
-            f'<li><a href="{esc(week.html_name)}">{esc(week.link_label)}'
+            f'<li><a href="{esc(week.html_name)}">{esc(week.title)}'
             f"<span>{esc(detail)}</span></a></li>"
         )
     listing = "\n".join(items) if items else "<li>No weekly summaries yet.</li>"
@@ -230,6 +255,40 @@ def index_page(origin: str, weeks: list[Week]) -> str:
         body=body,
         archive_href=None,
     )
+
+
+LATEST_COUNT = 4
+LATEST_START = "<!-- latest-weekly -->"
+LATEST_END = "<!-- /latest-weekly -->"
+
+
+def latest_block(weeks: list[Week]) -> str:
+    chosen = weeks[:LATEST_COUNT]
+    items: list[str] = []
+    for week in chosen:
+        items.append(
+            f'<li><a href="weekly/{esc(week.html_name)}">{esc(week.title)}</a></li>'
+        )
+    listing = "\n".join(items) if items else "<li>No weekly summaries yet.</li>"
+    return f"""<section><div class="wrap">
+<h2>Latest weekly summaries</h2>
+<ul class="archive">
+{listing}
+</ul>
+</div></section>"""
+
+
+def inject_latest(text: str, weeks: list[Week]) -> str:
+    block = f"{LATEST_START}\n{latest_block(weeks)}\n{LATEST_END}"
+    wrapped = re.compile(
+        re.escape(LATEST_START) + r".*?" + re.escape(LATEST_END),
+        re.DOTALL,
+    )
+    if wrapped.search(text):
+        return wrapped.sub(lambda _match: block, text, count=1)
+    if LATEST_START not in text:
+        sys.exit(f"{SITE / 'index.html'} is missing {LATEST_START}")
+    return text.replace(LATEST_START, block, 1)
 
 
 def sitemap(origin: str, weeks: list[Week]) -> str:
@@ -285,33 +344,61 @@ def main() -> None:
     index = index_page(origin, weeks)
     index_path = out_dir / "index.html"
     index_path.write_text(index, encoding="utf-8")
-    require(
-        index_path,
-        index,
-        (
-            "<title>",
-            'name="description"',
-            'rel="canonical"',
-            'href="../"',
-            "Back to home",
-        ),
-    )
-
+    archive_needles = [
+        "<title>",
+        'name="description"',
+        'rel="canonical"',
+        'href="../"',
+        "Back to home",
+    ]
     for week in weeks:
-        text = week_page(origin, week)
+        archive_needles.append(f'<a href="{esc(week.html_name)}">{esc(week.title)}')
+    require(index_path, index, tuple(archive_needles))
+
+    home_path = SITE / "index.html"
+    home_text = inject_latest(home_path.read_text(encoding="utf-8"), weeks)
+    home_path.write_text(home_text, encoding="utf-8")
+    home_needles = [
+        "Latest weekly summaries",
+        LATEST_START,
+        LATEST_END,
+        "https://ko-fi.com/fdadeviceleads",
+        "https://ko-fi.com/s/3eeb0ed76c",
+        "$12<small>/month</small>",
+        "$19<small>/month</small>",
+    ]
+    for week in weeks[:LATEST_COUNT]:
+        home_needles.append(f'href="weekly/{week.html_name}"')
+        home_needles.append(week.title)
+    require(home_path, home_text, tuple(home_needles))
+
+    for index, week in enumerate(weeks):
+        newer = weeks[index - 1] if index else None
+        older = weeks[index + 1] if index + 1 < len(weeks) else None
+        text = week_page(origin, week, older=older, newer=newer)
         path = out_dir / week.html_name
         path.write_text(text, encoding="utf-8")
-        require(
-            path,
-            text,
-            (
-                f"<title>{esc(week.title)}</title>",
-                f'content="{esc(week.title)}"',
-                f'href="{esc(absolute(origin, week.path))}"',
-                'href="../"',
-                'href="./"',
-            ),
-        )
+        needles = [
+            f"<title>{esc(week.title)}</title>",
+            f'content="{esc(week.title)}"',
+            f'href="{esc(absolute(origin, week.path))}"',
+            'href="../"',
+            'href="./"',
+            "Weekly archive",
+            'class="week-nav"',
+        ]
+        if older is not None:
+            needles.append(f'href="{esc(older.html_name)}"')
+            needles.append("Previous week")
+        if newer is not None:
+            needles.append(f'href="{esc(newer.html_name)}"')
+            needles.append("Next week")
+        require(path, text, tuple(needles))
+        nav = week_nav(older, newer)
+        if older is None and "Previous week" in nav:
+            sys.exit(f"{path} includes a previous-week link with no older page")
+        if newer is None and "Next week" in nav:
+            sys.exit(f"{path} includes a next-week link with no newer page")
 
     sitemap_path = SITE / "sitemap.xml"
     robots_path = SITE / "robots.txt"
